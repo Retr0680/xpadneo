@@ -229,9 +229,21 @@ static int core_probe(struct hid_device *hdev, const struct hid_device_id *id)
 	xdata->original_vendor = hdev->vendor;
 	xdata->original_product = hdev->product;
 	xdata->original_version = hdev->version;
-	hdev->vendor = USB_VENDOR_ID_MICROSOFT;
-	hdev->product = 0x028E;
-	hdev->version = 0x00001130;
+
+	/*
+	 * Xbox Series X|S already exposes the controller through its
+	 * native 0x0B13 Bluetooth HID identity. Keep the real identity
+	 * so userspace can identify the controller correctly.
+	 *
+	 * Other supported controllers retain xpadneo's existing
+	 * Windows-mode compatibility identity.
+	 */
+	if (xdata->original_vendor != USB_VENDOR_ID_MICROSOFT ||
+	    xdata->original_product != 0x0B13) {
+		hdev->vendor = USB_VENDOR_ID_MICROSOFT;
+		hdev->product = 0x028E;
+		hdev->version = 0x00001130;
+	}
 
 	if ((hdev->vendor != xdata->original_vendor) || (hdev->product != xdata->original_product))
 		hid_info(hdev,
