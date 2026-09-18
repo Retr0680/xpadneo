@@ -231,26 +231,33 @@ static int core_probe(struct hid_device *hdev, const struct hid_device_id *id)
 	xdata->original_version = hdev->version;
 
 	/*
-	 * Xbox Series X|S already exposes the controller through its
-	 * native 0x0B13 Bluetooth HID identity. Keep the real identity
-	 * so userspace can identify the controller correctly.
+	 * Xbox Series X|S controllers using the modern BLE descriptor
+	 * already expose the correct HID identity as 0x0B13.
+	 *
+	 * Keep the native identity for 0x045E:0x0B13 so userspace can
+	 * identify the controller as an Xbox Series X|S controller.
 	 *
 	 * Other supported controllers retain xpadneo's existing
 	 * Windows-mode compatibility identity.
 	 */
-	if (xdata->original_vendor != USB_VENDOR_ID_MICROSOFT ||
-	    xdata->original_product != 0x0B13) {
+	if (xdata->original_vendor == USB_VENDOR_ID_MICROSOFT &&
+	    xdata->original_product == 0x0B13) {
+		strscpy(hdev->name, "Xbox Series X/S Controller", sizeof(hdev->name));
+		hid_info(hdev,
+			 "keeping native Xbox Series X|S identity "
+			 "(VID 0x%04X, PID 0x%04X)\n",
+			 hdev->vendor, hdev->product);
+	} else {
 		hdev->vendor = USB_VENDOR_ID_MICROSOFT;
 		hdev->product = 0x028E;
 		hdev->version = 0x00001130;
-	}
 
-	if ((hdev->vendor != xdata->original_vendor) || (hdev->product != xdata->original_product))
 		hid_info(hdev,
 			 "pretending XB1S Windows wireless mode "
 			 "(changed VID from 0x%04X to 0x%04X, PID from 0x%04X to 0x%04X)\n",
-			 xdata->original_vendor, hdev->vendor, xdata->original_product,
-			 hdev->product);
+			 xdata->original_vendor, hdev->vendor,
+			 xdata->original_product, hdev->product);
+	}
 
 	ret = hid_parse(hdev);
 	if (ret) {

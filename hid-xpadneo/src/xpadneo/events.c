@@ -189,8 +189,11 @@ int xpadneo_events_event(struct hid_device *hdev, struct hid_field *field,
 			xdata->last_abs_rz = value;
 			break;
 		}
-	} else if (!param_disable_shift_mode && (usage->type == EV_KEY)
-		   && (usage->code == BTN_XBOX)) {
+	} else if (!param_disable_shift_mode &&
+		   !(xdata->original_vendor == 0x045e &&
+		     xdata->original_product == 0x0B13) &&
+		   (usage->type == EV_KEY) &&
+		   (usage->code == BTN_XBOX)) {
 		/*
 		 * Handle the Xbox logo button: We want to cache the button
 		 * down event to allow for profile switching. The button will
@@ -285,6 +288,18 @@ int xpadneo_events_input_configured(struct hid_device *hdev, struct hid_input *h
 	case HID_GD_GAMEPAD:
 		hid_info(hdev, "gamepad detected\n");
 		xdata->gamepad.idev = hi->input;
+
+		/*
+		 * Keep the native Xbox Series X|S HID identity while giving the
+		 * actual gamepad input device a clear model name. Only apply this
+		 * to the real Microsoft 0x0B13 device; leave all other devices
+		 * unchanged.
+		 */
+		if (xdata->original_vendor == 0x045e &&
+		    xdata->original_product == 0x0B13) {
+			hi->input->name = "Xbox Series X/S Controller";
+			hid_info(hdev, "using Xbox Series X/S controller name\n");
+		}
 		break;
 	case HID_GD_KEYBOARD:
 		hid_info(hdev, "keyboard detected\n");
