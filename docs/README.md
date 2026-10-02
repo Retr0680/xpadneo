@@ -416,6 +416,84 @@ In order to update xpadneo, do the following
 - otherwise follow the steps above (generic distribution)
 
 
+## Retr0 Fork: Xbox Series X|S Changes
+
+This fork includes changes for the Microsoft Xbox Series X|S Bluetooth controller
+with vendor/product ID `045e:0b13`.
+
+### Native controller identity
+
+For controllers identified as `045e:0b13`, the driver preserves the original
+vendor, product, and version identifiers instead of replacing them with the
+Xbox 360 compatibility identity (`045e:028e`). The input device is named
+`Xbox Series X/S Controller`.
+
+Other controllers continue to use the existing compatibility identity behavior.
+
+### Input event handling
+
+For the `045e:0b13` controller, the fork bypasses the driver's Xbox-logo-button
+shift/profile handling. This is intended to preserve the controller's native
+Guide-button behavior.
+
+The previous sparse Linux button-report heuristic and the associated
+`A0:5A:54` OUI quirk were removed. Devices that relied on that heuristic may
+require additional testing.
+
+### Build and install this fork with DKMS
+
+The following example uses the custom version `0.11.0-retr0.1`.
+
+1. Generate the DKMS configuration from the repository:
+
+   ```bash
+   make VERSION=0.11.0-retr0.1 build
+   ```
+
+2. Copy the driver source, including the generated `dkms.conf`, into DKMS's
+   source directory:
+
+   ```bash
+   sudo mkdir -p /usr/src/hid-xpadneo-0.11.0-retr0.1
+   sudo cp -a hid-xpadneo/. /usr/src/hid-xpadneo-0.11.0-retr0.1/
+   ```
+
+3. Register, build, and install the module:
+
+   ```bash
+   sudo dkms add -m hid-xpadneo -v 0.11.0-retr0.1
+   sudo dkms build -m hid-xpadneo -v 0.11.0-retr0.1
+   sudo dkms install -m hid-xpadneo -v 0.11.0-retr0.1
+   ```
+
+   Omitting `-k` lets DKMS select eligible installed kernels for which the
+   required build environment is available. The commands do not guarantee that
+   every installed kernel has matching headers.
+
+4. Verify the DKMS status and module metadata:
+
+   ```bash
+   dkms status
+   modinfo -F version hid_xpadneo
+   modinfo -F filename hid_xpadneo
+   ```
+
+5. Load the module if it is not already loaded, then verify the loaded version:
+
+   ```bash
+   sudo modprobe hid_xpadneo
+   cat /sys/module/hid_xpadneo/version
+   ```
+
+   The last command reports the version of the module currently loaded in the
+   running kernel. `modinfo` reports module metadata on disk and does not, by
+   itself, confirm which version is loaded.
+
+The custom version `0.11.0-retr0.1` has been built, signed, and installed
+successfully for kernel `7.2.8-2-cachyos`; it was also loaded successfully.
+Guide-button behavior, native identity as observed by applications, and
+in-game input behavior should still be tested on the target setup.
+
 ## Further Information
 
 For further information please visit the GitHub Page <https://atar-axis.github.io/xpadneo/> which is generated
