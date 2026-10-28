@@ -28,7 +28,7 @@ __version_lte() {
 }
 
 # shellcheck disable=SC2034
-VERSION=$(__version)
+VERSION="${VERSION:-$(__version)}"
 
 DKMS_BIN=$(type -p dkms)
 

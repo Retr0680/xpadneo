@@ -6,24 +6,36 @@ source "lib/installer.sh"
 set -e
 
 LATEST=$(get_upstream_version_latest)
+CURRENT_KERNEL=$(uname -r)
+
+current_kernel_module_installed() {
+    local status
+    status=$("${DKMS_BIN}" status -m hid-xpadneo -v "${VERSION}" -k "${CURRENT_KERNEL}" 2>/dev/null || true)
+    [[ "${status}" == *": installed"* ]] &&
+        modinfo -k "${CURRENT_KERNEL}" hid_xpadneo >/dev/null 2>&1
+}
 
 reinstall() {
-    if [[ "${VERSION}" == "${INSTALLED[0]}" ]]; then
-        echo "You have already installed ${VERSION}!"
+    if current_kernel_module_installed; then
+        echo "You have already installed ${VERSION} for kernel ${CURRENT_KERNEL}."
     else
+        echo "* repairing DKMS installation for kernel ${CURRENT_KERNEL}"
         echo "* uninstalling outdated modules"
-        ./uninstall.sh
+        VERSION="${VERSION}" ./uninstall.sh
 
-        echo "* installing latest version"
-        ./install.sh
+        echo "* installing repository version ${VERSION}"
+        VERSION="${VERSION}" ./install.sh --force
     fi
+
+    echo "* loading driver module"
+    modprobe hid_xpadneo
 }
 
 if [[ "${LATEST}" == "${VERSION}" ]]; then
-    echo "Looks like the repo is up to date, fine!"
+    echo "Looks like the repo is up to date, checking DKMS installation."
     reinstall
-elif __version_lte "${LATEST}" "${VERSION}"; then
-    echo "Looks like you are on a developer version, reinstalling!"
+elif __version_lte "${LATEST}" "${VERSION}" ; then
+    echo "Looks like you are on a developer version, checking DKMS installation."
     reinstall
 else
     echo "Latest stable version: ${LATEST}"

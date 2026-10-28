@@ -20,12 +20,6 @@
   tools.
 - AI-assisted pull requests must declare AI assistance in the pull request
   template.
-- Agents must not open pull requests for external contributions on a human's
-  behalf; they prepare the branch and text, and the human opens the pull
-  request and ticks the template checkboxes themselves.
-- Agents are collaborators, not copy-paste text generators: verify and engage
-  with the human before producing unprompted pull request or commit text that
-  a human is expected to paste as-is.
 
 
 ## Read Before Editing
@@ -131,15 +125,12 @@ Default section order:
 ## Bug Fixing Guidance
 
 - Start from the observed failure, linked reports, and relevant logs.
-- Before writing a fix, search open and closed issues and pull requests for the
-  symptom, controller model, and log messages. Earlier discussions may already
+- Before writing a fix, search open and closed issues and pull requests for
+  the symptom, controller model, and log messages. Earlier discussions may already
   explain why an obvious fix is wrong.
 - Check commits on `master` and the queue branches since the last release tag
   for changes to the same area. The problem may already be fixed or
   superseded.
-- If an existing issue covers the problem, add findings there instead of
-  opening a new pull request. Do not open a pull request in place of a bug
-  report.
 - Identify whether the fix is a bug fix, safe feature, behavior change, or
   architecture change before choosing its target branch or milestone.
 - Document hardware-specific findings when they rely on descriptors, OUIs,
