@@ -481,7 +481,7 @@ The following example uses the custom version `0.11.0-retr0.1`.
    cat /sys/module/hid_xpadneo/version
    ```
 
-   The updater also verifies the DKMS installation for the running kernel, reinstalls the module when it is missing, and attempts to load it with `modprobe hid_xpadneo`.
+   The updater verifies the DKMS installation for the running kernel, reinstalls the module when it is missing, then unloads and reloads `hid_xpadneo` to recover from a stale driver state.
 
    The last command reports the version of the module currently loaded in the
    running kernel. `modinfo` reports module metadata on disk and does not, by
