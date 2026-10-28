@@ -12,10 +12,10 @@ reinstall() {
         echo "You have already installed ${VERSION}!"
     else
         echo "* uninstalling outdated modules"
-        ./uninstall.sh
+        VERSION="${VERSION}" ./uninstall.sh
 
-        echo "* installing latest version"
-        ./install.sh
+        echo "* installing repository version"
+        VERSION="${VERSION}" ./install.sh
     fi
 }
 
