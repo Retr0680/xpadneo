@@ -27,7 +27,8 @@ reinstall() {
         VERSION="${VERSION}" ./install.sh --force
     fi
 
-    echo "* loading driver module"
+    echo "* restarting driver module"
+    modprobe -r hid_xpadneo 2>/dev/null || true
     modprobe hid_xpadneo
 }
 
